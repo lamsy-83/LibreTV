@@ -26,12 +26,15 @@ jobs:
       - name: Set Docker image tag based on repository
         id: set-tag
         run: |
+          # Define your custom registry hostname here
+          DOCKER_REGISTRY="${{ secrets.DOCKER_REGISTRY }}"
+          
           if [ "${{ github.repository }}" = "LibreSpark/LibreTV" ]; then
             echo "IMAGE_NAME=libretv" >> $GITHUB_OUTPUT
-            echo "TAGS=${{ secrets.DOCKER_USERNAME }}/libretv:latest,${{ secrets.DOCKER_USERNAME }}/libretv:${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+            echo "TAGS=$DOCKER_REGISTRY/${{ secrets.DOCKER_USERNAME }}/libretv:latest,$DOCKER_REGISTRY/${{ secrets.DOCKER_USERNAME }}/libretv:${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
           else
             echo "IMAGE_NAME=libretv-beta" >> $GITHUB_OUTPUT
-            echo "TAGS=${{ secrets.DOCKER_USERNAME }}/libretv-beta:latest" >> $GITHUB_OUTPUT
+            echo "TAGS=$DOCKER_REGISTRY/${{ secrets.DOCKER_USERNAME }}/libretv-beta:latest" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up Docker QEMU
@@ -40,9 +43,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to DockerHub
+      - name: Login to Custom Docker Registry
         uses: docker/login-action@v3
         with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
